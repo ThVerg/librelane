@@ -41,6 +41,12 @@
   yosys-lighter,
   yosys-slang,
   yosys-ghdl,
+  yosys-plugin-set ? [
+    yosys-sby
+    yosys-eqy
+    yosys-lighter
+    yosys-slang
+  ] ++ lib.optionals (lib.lists.any (el: el == system) yosys-ghdl.meta.platforms) [yosys-ghdl],
   # Python
   buildPythonPackage,
   poetry-core,
@@ -62,15 +68,7 @@
   semver,
   klayout,
 }: let
-  yosys-with-plugins = yosys.withPlugins (
-    [
-      yosys-sby
-      yosys-eqy
-      yosys-lighter
-      yosys-slang
-    ]
-    ++ lib.optionals (lib.lists.any (el: el == system) yosys-ghdl.meta.platforms) [yosys-ghdl]
-  );
+  yosys-with-plugins = yosys.withPlugins (yosys-plugin-set);
   yosys-env = (yosys.withPythonPackages.override {target = yosys-with-plugins;}) (ps: with ps; [click]);
   openroad-env = openroad.withPythonPackages (ps:
     with ps; [
