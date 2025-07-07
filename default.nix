@@ -47,6 +47,7 @@
     yosys-lighter
     yosys-slang
   ] ++ lib.optionals (lib.lists.any (el: el == system) yosys-ghdl.meta.platforms) [yosys-ghdl],
+  extra-yosys-plugins ? [],
   # Python
   buildPythonPackage,
   poetry-core,
@@ -67,15 +68,12 @@
   rapidfuzz,
   semver,
   klayout,
+  extra-python-interpreter-packages ? ps: [],
 }: let
-  yosys-with-plugins = yosys.withPlugins (yosys-plugin-set);
-  yosys-env = (yosys.withPythonPackages.override {target = yosys-with-plugins;}) (ps: with ps; [click]);
-  openroad-env = openroad.withPythonPackages (ps:
-    with ps; [
-      click
-      rich
-      pyyaml
-    ]);
+  yosys-with-plugins = yosys.withPlugins (yosys-plugin-set ++ extra-yosys-plugins);
+  python-interpreter-packages = ps: (with ps; [click rich pyyaml]) ++ (extra-python-interpreter-packages ps);
+  yosys-env = (yosys.withPythonPackages.override {target = yosys-with-plugins;}) (python-interpreter-packages);
+  openroad-env = openroad.withPythonPackages (python-interpreter-packages);
   self = buildPythonPackage {
     pname = "librelane";
     version = (builtins.fromTOML (builtins.readFile ./pyproject.toml)).tool.poetry.version;

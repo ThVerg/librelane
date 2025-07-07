@@ -67,7 +67,7 @@
         )
         (
           nix-eda.composePythonOverlay (pkgs': pkgs: pypkgs': pypkgs: let
-            callPythonPackage = lib.callPackageWith (pkgs' // pkgs'.python3.pkgs);
+            callPythonPackage = lib.callPackageWith (pkgs' // pypkgs');
           in {
             mdformat = pypkgs.mdformat.overridePythonAttrs {
               version = "0.7.18";
