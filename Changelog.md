@@ -18,6 +18,22 @@
 
 ## Steps
 
+  * `KLayout.StreamOut`: Added `KLAYOUT_CONFLICT_RESOLUTION` which specifies the conflict resolution if a cell name conflict arises. (Default: "RenameCell")
+
+    * Allowed values: "AddToCell", "OverwriteCell", "RenameCell" and "SkipNewCell"
+
+* `KLayout.DRC`
+
+  * Add support for ihp-sg13g2
+
+* Add `KLayout.LVS` step
+
+  * Add support for ihp-sg13g2
+
+* Add `OpenROAD.WriteCDL` step
+
+  * Write the CDL netlist of a design
+
 * `Checker.HoldViolations`
 
   * Changed default value of `HOLD_VIOLATION_CORNERS` to `['*']`, which will
@@ -210,6 +226,7 @@
   * Updated Netgen to `1.5.295`
   * Updated Yosys to `0.54`
     * Replaced Synlig with [Slang](https://github.com/povik/yosys-slang)
+  * Updated Verilator to `5.038`
 * Updated OpenROAD to `341650e`
 * Updated OpenSTA to `ffabd65`
 
@@ -221,6 +238,17 @@
   PDK variables.)
 
 ## Misc. Enhancements/Bugfixes
+
+* Store hashes for each PDK family separately
+
+  * Renamed `open_pdks_rev` to `pdk_hashes.yaml`
+  * Add hash for ihp-sg13g2
+  * Rename `PDK_ihp-sg13g2` define to `PDK_ihp_sg13g2`
+  * Metrics: split `pdk-scl-design_name` triple from the right, since ihp-sg13g2 contains a `-`
+
+* `librelane.common`
+
+  * `_eval_env`: Add support for nested dicts in tcl
 
 * `openlane.flows`
 
@@ -277,6 +305,11 @@
     instead of floats.
 
 ## API Breaks
+
+* `KLayout.StreamOut` now behaves differently as the default for cell conflict resolution has been changed from "AddToCell" to "RenameCell", which is a safer.
+
+	* To retain the old behavior, set `KLAYOUT_CONFLICT_RESOLUTION` to "AddToCell".
+	* It may be necessary to set `KLAYOUT_CONFLICT_RESOLUTION` to "SkipNewCell" to match the old macro integration behavior of magic.
 
 * `*`
 
@@ -415,6 +448,10 @@ original authors after Efabless Corporation has ceased operations.
 
 * `CLI`
 
+  * New command, `librelane.help` that can be supplied with the ID of either a
+    flow or step and it prints the full markdown help for the flow or step in
+    the terminal.
+
   * Various fixes to `--ef-save-views-to` to better align with the Caravel User
     Project format: SDFs now save in the right spot and reports are saved
     correctly.
@@ -463,6 +500,12 @@ original authors after Efabless Corporation has ceased operations.
 
   * Fixed crash associated with `__del__` when ScopedFile is declared at the
     top-level.
+
+* Enhanced resilience against permission issues with containerized setups.
+
+  * Temporary directories are no longer mounted.
+  
+  * Docker and Podman are both tested in CI.
 
 * Worked around an issue with Google Colaboratory where if `PATH` is set,
   Yosys's Python `sitepackages` are replaced with the global ones and everything
