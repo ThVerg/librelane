@@ -13,9 +13,10 @@
 # limitations under the License.
 {
   extra-packages ? [],
-  extra-python-packages ? [],
+  extra-python-packages ? ps: [],
   extra-env ? [],
-  librelane-plugins ? [],
+  librelane-plugins ? ps: [],
+  librelane-extra-python-interpreter-packages ? ps: [],
   librelane-extra-yosys-plugins ? [],
   include-librelane ? true,
 }: ({
@@ -27,24 +28,28 @@
   coreutils,
   graphviz,
   verilog,
-  python3,
+  python,
+  librelane,
   devshell,
 }: let
-  librelane = python3.pkgs.librelane.override {
-    extra-yosys-plugins = librelane-extra-yosys-plugins;
-  };
   librelane-env = (
-    python3.withPackages (pp:
+    python.withPackages (pp: let
+      librelane = pp.librelane.override {
+        extra-python-interpreter-packages = librelane-extra-python-interpreter-packages;
+        extra-yosys-plugins = librelane-extra-yosys-plugins;
+      };
+    in
       (
         if include-librelane
         then [librelane]
         else librelane.propagatedBuildInputs
       )
-      ++ extra-python-packages
-      ++ librelane-plugins)
+      ++ extra-python-packages pp
+      ++ librelane-plugins pp)
   );
+  plugins-resolved = librelane-plugins python.pkgs;
   librelane-env-sitepackages = "${librelane-env}/${librelane-env.sitePackages}";
-  pluginIncludedTools = lib.lists.flatten (map (n: n.includedTools) librelane-plugins);
+  pluginIncludedTools = lib.lists.flatten (map (n: n.includedTools) plugins-resolved);
   prompt = ''\[\033[1;32m\][nix-shell:\w]\$\[\033[0m\] '';
   packages =
     [
