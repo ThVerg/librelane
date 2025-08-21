@@ -32,24 +32,27 @@
   librelane,
   devshell,
 }: let
-  librelane-env = (
-    python.withPackages (pp: let
-      librelane = pp.librelane.override {
-        extra-python-interpreter-packages = librelane-extra-python-interpreter-packages;
-        extra-yosys-plugins = librelane-extra-yosys-plugins;
-      };
-    in
-      (
-        if include-librelane
-        then [librelane]
-        else librelane.propagatedBuildInputs
-      )
-      ++ extra-python-packages pp
-      ++ librelane-plugins pp)
-  );
   plugins-resolved = librelane-plugins python.pkgs;
+  plugin-included-tools = lib.lists.flatten (map (n: n.includedTools) plugins-resolved);
+  plugin-yosys-plugins = lib.lists.flatten (map (n: n.addedYosysPlugins or []) plugins-resolved);
+  librelane' = librelane.override {
+    extra-python-interpreter-packages = librelane-extra-python-interpreter-packages;
+    extra-yosys-plugins = librelane-extra-yosys-plugins ++ plugin-yosys-plugins;
+  };
+  plugins-overridden = map (p: p.override {librelane = librelane';}) plugins-resolved;
+  plugins-propagatedBuildInputs = lib.lists.flatten (map (p: (lib.filter (d: d.pname != "librelane") p.propagatedBuildInputs)) plugins-resolved);
+  librelane-env = (
+    python.withPackages (
+      pp:
+        (
+          if include-librelane
+          then ([librelane'] ++ plugins-overridden)
+          else (librelane'.propagatedBuildInputs ++ plugins-propagatedBuildInputs)
+        )
+        ++ extra-python-packages pp
+    )
+  );
   librelane-env-sitepackages = "${librelane-env}/${librelane-env.sitePackages}";
-  pluginIncludedTools = lib.lists.flatten (map (n: n.includedTools) plugins-resolved);
   prompt = ''\[\033[1;32m\][nix-shell:\w]\$\[\033[0m\] '';
   packages =
     [
@@ -65,8 +68,8 @@
       graphviz
     ]
     ++ extra-packages
-    ++ librelane.includedTools
-    ++ pluginIncludedTools;
+    ++ librelane'.includedTools
+    ++ plugin-included-tools;
 in
   devshell.mkShell {
     devshell.packages = packages;

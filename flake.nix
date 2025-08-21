@@ -180,13 +180,12 @@
           include-librelane = false;
         }) {};
         docs = callPackage (self.createOpenLaneShell {
-          extra-packages = ps:
-            with ps; [
-              jdupes
-              alejandra
-              imagemagick
-              nodejs.pkgs.nodemon
-            ];
+          extra-packages = with pkgs; [
+            jdupes
+            alejandra
+            imagemagick
+            nodejs.pkgs.nodemon
+          ];
           extra-python-packages = ps:
             with ps; [
               pyfakefs
