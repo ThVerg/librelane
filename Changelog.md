@@ -54,6 +54,10 @@ Style Notes
 
   * Allowed values: "AddToCell", "OverwriteCell", "RenameCell" and "SkipNewCell"
 
+* `Magic.DRC`: Added `MAGIC_GDS_FLATGLOB`
+
+  * Used to flatten cells in order to prevent false positive DRC errors.
+
 * `Magic.SpiceExtraction`: Added `MAGIC_EXT_UNIQUE` to replace
   `MAGIC_NO_EXT_UNIQUE`
 
@@ -87,6 +91,13 @@ Style Notes
 
   * `HEURISTIC_ANTENNA_THRESHOLD` has been made optional, steps do nothing if it
     is unset.
+
+* `Odb.InsertECOBuffer`, `Odb.InsertECODiode`
+
+  * Steps now work with hierarchical netlists.
+
+  * Steps are skipped if `INSERT_ECO_BUFFERS` or `INSERT_ECO_DIODES` is
+    undefined.
 
 * `OpenROAD.*`
 
@@ -132,8 +143,10 @@ Style Notes
   * Added `CTS_SINK_BUFFER_MAX_CAP_DERATE_PCT`
   * Added `CTS_DELAY_BUFFER_DERATE_PCT`
   * `CTS_CLK_BUFFERS` can now take wildcards.
-  * Added `CTS_SINK_CLUSTERING_ENABLE` to control sink clustering (default is enabled).
-  * Made `CTS_SINK_CLUSTERING_SIZE` and `CTS_SINK_CLUSTERING_MAX_DIAMETER` optional. OpenROAD determines the best values.
+  * Added `CTS_SINK_CLUSTERING_ENABLE` to control sink clustering (default is
+    enabled).
+  * Made `CTS_SINK_CLUSTERING_SIZE` and `CTS_SINK_CLUSTERING_MAX_DIAMETER`
+    optional. OpenROAD determines the best values.
   * Added `CTS_MACRO_CLUSTERING_SIZE` and `CTS_MACRO_CLUSTERING_MAX_DIAMETER`.
 
 * `OpenROAD.CutRows`
@@ -170,6 +183,18 @@ Style Notes
   * All variables prefixed `FP_PDN_` have been renamed to be prefixed simply
     `PDN`. Backwards compatibility wrapper code has been added for `PDN_CFG`
     files.
+
+  * Added `PDN_EXTEND_TO` with values "core_ring" and "boundary" (default:
+    "core_ring").
+
+  * Added `PDN_CORE_RING_CONNECT_TO_PADS` to connect the core ring to the pads.
+
+  * Added `PDN_CORE_RING_ALLOW_OUT_OF_DIE` (default: True).
+
+  * Added `PDN_CORE_HORIZONTAL_LAYER` and `PDN_CORE_VERTICAL_LAYER`.
+
+  * Added `PDN_ENABLE_PINS` (default: True) since padrings have pins on their
+    bondpads.
 
 * `OpenROAD.GlobalPlacement`
 
@@ -229,6 +254,18 @@ Style Notes
 * Created `OpenROAD.WriteCDL`
 
   * Writes the CDL netlists for a database.
+
+* `Verilator.Lint`
+
+  * Added `LINTER_DISABLE_WARNINGS` to disable linter warnings.
+
+  * Added `LINTER_DISABLE_WARNINGS_BLACKBOX` to disable linter warnings for
+    blackbox modules.
+
+  * Added `LINTER_VLT` as a user defined Verilator Configuration format file
+    (`.vlt`).
+
+  * Verilator now creates a `_waivers_output.vlt` file based on the encountered linter warnings.
 
 * `Yosys.*Synthesis`
 
@@ -448,6 +485,23 @@ Style Notes
 ## Documentation
 
 * Variable types now link to dataclasses' API reference as appropriate.
+
+# 2.4.2
+
+## Documentation
+
+* Added VHDL usage guide by [@mole99](https://github.com/mole99)
+* Fixed invalid path in PDK porting guide
+* Fixed documentation for `FP_IO_{V,H}_LAYER`
+* Various updates to the FAQ
+* Various docstring formatting fixes
+
+# 2.4.1
+
+## Misc. Enhancements/Bugfixes
+
+* Replaced libparse with a fork maintained by the LibreLane team to fix
+  LibreLane not being installable on Python 3.13.
 
 # 2.4.0: Hello, LibreLane
 

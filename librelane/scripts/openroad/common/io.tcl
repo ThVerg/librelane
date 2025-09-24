@@ -645,6 +645,13 @@ proc append_if_not_flag {list_arg glob_variable_name flag} {
     }
 }
 
+proc append_if_equals {list_arg glob_variable_name value flag} {
+    upvar $list_arg local_array
+    if { [info exists ::env($glob_variable_name)] && $::env($glob_variable_name) == $value } {
+        lappend local_array $flag
+    }
+}
+
 # Code below adapted from OpenROAD Flow Scripts under the following license:
 #
 # BSD 3-Clause License
