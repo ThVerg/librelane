@@ -128,6 +128,11 @@ verilog_rtl_cfg_vars = [
         default=False,
         deprecated_names=["USE_SYNLIG"],
     ),
+    Variable(
+        "SLANG_ARGUMENTS",
+        Optional[List[str]],
+        "Pass arguments to the Slang frontend.",
+    ),
 ]
 
 DesignFormat(
@@ -208,6 +213,12 @@ class PyosysStep(Step):
             Optional[str],
             "A fully qualified IPVT corner to use during synthesis. If unspecified, the value for `DEFAULT_CORNER` from the PDK will be used.",
             pdk=True,
+        ),
+        Variable(
+            "SYNTH_SHOW",
+            bool,
+            "Generate a graphviz DOT file for the design. This will fail on a completely empty design.",
+            default=False,
         ),
     ]
 
@@ -439,7 +450,7 @@ class SynthesisCommon(VerilogStep):
         Variable(
             "SYNTH_HIERARCHY_MODE",
             Literal["flatten", "deferred_flatten", "keep"],
-            "Affects how hierarchy is maintained throughout and after synthesis. 'flatten' flattens it during and after synthesis. 'deferred_flatten' flattens it after synthesis. 'keep' never flattens it. If 'SYNTH_ELABORATE_ONLY' is set, 'flatten' and 'deferred_flatten' are equivalent.",
+            "Affects how hierarchy is maintained throughout and after synthesis. 'flatten' flattens it during and after synthesis. 'deferred_flatten' flattens it after synthesis. 'keep' never flattens it. Please note that when using the Slang plugin, you need to pass '--keep-hierarchy' to `SLANG_ARGUMENTS` separately.",
             default="flatten",
             deprecated_names=[
                 (

@@ -263,6 +263,7 @@ def synthesize(
             includes=includes,
             defines=defines,
             use_slang=False,
+            slang_arguments=[],
         )
     elif verilog_files := config.get("VERILOG_FILES"):
         d.read_verilog_files(
@@ -272,6 +273,7 @@ def synthesize(
             includes=includes,
             defines=defines,
             use_slang=config["USE_SLANG"],
+            slang_arguments=config["SLANG_ARGUMENTS"] or [],
         )
     elif vhdl_files := config.get("VHDL_FILES"):
         d.run_pass("plugin", "-i", "ghdl")
@@ -292,12 +294,10 @@ def synthesize(
     )
     d.run_pass("rename", "-top", config["DESIGN_NAME"])
     d.run_pass("select", "-module", config["DESIGN_NAME"])
-    try:
+    if config["SYNTH_SHOW"]:
         d.run_pass(
             "show", "-format", "dot", "-prefix", os.path.join(step_dir, "hierarchy")
         )
-    except Exception:
-        pass
     if config["SYNTH_NORMALIZE_SINGLE_BIT_VECTORS"]:
         d.run_pass("attrmap", "-remove", "single_bit_vector")
     d.run_pass("select", "-clear")
@@ -359,7 +359,7 @@ def synthesize(
     d.run_pass("delete", "t:$print")
     d.run_pass("delete", "t:$assert")
 
-    try:
+    if config["SYNTH_SHOW"]:
         d.run_pass(
             "show",
             "-format",
@@ -367,8 +367,6 @@ def synthesize(
             "-prefix",
             os.path.join(step_dir, "primitive_techmap"),
         )
-    except Exception:
-        pass
 
     d.run_pass("opt")
     d.run_pass("opt_clean", "-purge")
