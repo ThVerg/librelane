@@ -411,7 +411,7 @@ class DRC(MagicStep):
         Variable(
             "MAGIC_DRC_MAGLEFS",
             Optional[List[Path]],
-            "A list of pre-processed abstract LEF views for cells. They are read in before the design and act as blackboxes during DRC."
+            "A list of pre-processed abstract LEF views for cells. They are read in before the design and act as blackboxes during DRC.",
         ),
     ]
 
