@@ -520,16 +520,20 @@ def cloup_flow_opts(
                         err(f"Could not resolve the PDK '{pdk}'.")
                         exit(1)
 
-                    version = ciel.fetch(
-                        ciel_home,
-                        pdk_family,
-                        opdks_rev,
-                        data_source=StaticWebDataSource(
-                            "https://fossi-foundation.github.io/ciel-releases"
-                        ),
-                        include_libraries=include_libraries,
-                    )
-                    pdk_root = version.get_dir(ciel_home)
+                    try:
+                        version = ciel.fetch(
+                            ciel_home,
+                            pdk_family,
+                            opdks_rev,
+                            data_source=StaticWebDataSource(
+                                "https://fossi-foundation.github.io/ciel-releases"
+                            ),
+                            include_libraries=include_libraries,
+                        )
+                        pdk_root = version.get_dir(ciel_home)
+                    except ValueError as e:
+                        err(f"Failed to download PDK: {e}")
+                        exit(1)
 
                 return f(*args, pdk_root=pdk_root, pdk=pdk, scl=scl, **kwargs)
 

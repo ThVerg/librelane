@@ -214,6 +214,12 @@ class PyosysStep(Step):
             "A fully qualified IPVT corner to use during synthesis. If unspecified, the value for `DEFAULT_CORNER` from the PDK will be used.",
             pdk=True,
         ),
+        Variable(
+            "SYNTH_SHOW",
+            bool,
+            "Generate a graphviz DOT file for the design. This will fail on a completely empty design.",
+            default=False,
+        ),
     ]
 
     @classmethod
@@ -321,6 +327,12 @@ class VerilogStep(PyosysStep):
 
 @Step.factory.register()
 class JsonHeader(VerilogStep):
+    """
+    Extracts a high-level hierarchical view of the circuit in JSON format,
+    including power connections. The power connections are used in later steps
+    to ensure macros and cells are connected as desired.
+    """
+
     id = "Yosys.JsonHeader"
     name = "Generate JSON Header"
     long_name = "Generate JSON Header"
@@ -444,7 +456,7 @@ class SynthesisCommon(VerilogStep):
         Variable(
             "SYNTH_HIERARCHY_MODE",
             Literal["flatten", "deferred_flatten", "keep"],
-            "Affects how hierarchy is maintained throughout and after synthesis. 'flatten' flattens it during and after synthesis. 'deferred_flatten' flattens it after synthesis. 'keep' never flattens it. Please note that when using the Slang plugin, you need to pass '--keep-hierarchy' to `SLANG_ARGUMENTS` separately.",
+            "Affects how hierarchy is maintained throughout and after synthesis. 'flatten' flattens it during and after synthesis. 'deferred_flatten' flattens it after synthesis. 'keep' never flattens it. Please note that when using the Slang plugin, you need to pass '--keep-hierarchy' to `SLANG_ARGUMENTS` separately. To keep the hierarchy partially, use one of the flattening options and set the 'keep_hierarchy' attribute on instances or modules via: `SYNTH_KEEP_HIERARCHY_INSTANCES`, `SYNTH_KEEP_HIERARCHY_MODULES` or `SYNTH_KEEP_HIERARCHY_MIN_COST`.",
             default="flatten",
             deprecated_names=[
                 (
@@ -452,6 +464,21 @@ class SynthesisCommon(VerilogStep):
                     lambda x: "deferred_flatten" if x else "flatten",
                 )
             ],
+        ),
+        Variable(
+            "SYNTH_KEEP_HIERARCHY_MIN_COST",
+            Optional[int],
+            "Sets the 'keep_hierarchy' attribute on modules where the gate count is estimated to exceed the specified threshold. This prevents larger modules from being flattened. This variable only affects the design when 'flatten' is called through `SYNTH_HIERARCHY_MODE`.",
+        ),
+        Variable(
+            "SYNTH_KEEP_HIERARCHY_INSTANCES",
+            Optional[List[str]],
+            "A list of instances for which to set the 'keep_hierarchy' attribute. This variable only affects the design when 'flatten' is called through `SYNTH_HIERARCHY_MODE`.",
+        ),
+        Variable(
+            "SYNTH_KEEP_HIERARCHY_MODULES",
+            Optional[List[str]],
+            "A list of modules for which to set the 'keep_hierarchy' attribute. This variable only affects the design when 'flatten' is called through `SYNTH_HIERARCHY_MODE`.",
         ),
         Variable(
             "SYNTH_SHARE_RESOURCES",

@@ -1244,6 +1244,12 @@ class IOPlacement(OpenROADStep):
                 Optional[Path],
                 "Points to the DEF file to be used as a template.",
             ),
+            Variable(
+                "IO_EXCLUDE_PIN_REGION",
+                Optional[List[str]],
+                "List of regions where pins cannot be placed. The regions are strings in the format `{edge}:{interval}` where edge is `top|bottom|left|right` and the interval is either `*` to exclude the entire edge or `{begin}-{end}` to exclude a part of the edge, where `begin` and `end` are either absolute distance values or themselves `*` to denote the very start or end of an edge.",
+                units="µm",
+            ),
         ]
     )
 
@@ -1544,11 +1550,6 @@ class GlobalPlacementSkipIO(_GlobalPlacement):
             Optional[Path],
             "Path to a custom pin configuration file.",
             deprecated_names=["FP_PIN_ORDER_CFG"],
-        ),
-        Variable(
-            "FP_DEF_TEMPLATE",
-            Optional[Path],
-            "Points to the DEF file to be used as a template.",
         ),
     ]
 

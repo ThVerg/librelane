@@ -16,7 +16,6 @@ import inspect
 from enum import Enum
 from decimal import Decimal, InvalidOperation
 from dataclasses import (
-    _MISSING_TYPE,
     MISSING,
     asdict,
     dataclass,
@@ -24,6 +23,7 @@ from dataclasses import (
     fields,
     is_dataclass,
 )
+import types
 from typing import (
     ClassVar,
     Dict,
@@ -219,7 +219,8 @@ class Macro:
 
 def is_optional(t: Type[Any]) -> bool:
     type_args = get_args(t)
-    return get_origin(t) is Union and type(None) in type_args
+    origin = get_origin(t)
+    return (origin is Union or origin is types.UnionType) and type(None) in type_args
 
 
 def some_of(t: Type[Any]) -> Type[Any]:
@@ -229,11 +230,20 @@ def some_of(t: Type[Any]) -> Type[Any]:
     # t must be a Union with None if we're here
 
     type_args = get_args(t)
+    origin = get_origin(t)
 
-    args_without_none = [arg for arg in type_args if arg != type(None)]
+    args_without_none = [arg for arg in type_args if arg is not type(None)]
     if len(args_without_none) == 1:
         return args_without_none[0]
 
+    if origin is types.UnionType:
+        # Use the | operator to create a UnionType
+        result = args_without_none[0]
+        for arg in args_without_none[1:]:
+            result = result | arg
+        return result
+
+    # Otherwise, return a typing.Union
     new_union = Union[tuple(args_without_none)]  # type: ignore
     return new_union  # type: ignore
 
@@ -454,7 +464,7 @@ class Variable:
             raw = value
             if isinstance(raw, list) or isinstance(raw, tuple):
                 # HACK: Allow multiple globs within Path variables
-                if validating_type == List[Path]:
+                if type_origin is list and type_args == (Path,):
                     if any(isinstance(item, List) for item in raw):
                         Variable.__flatten_list(value)
                 pass  # do nothing, can be used as is
@@ -476,7 +486,7 @@ class Variable:
                     f"List provided for variable '{key_path}' is invalid: {value}"
                 )
 
-            if type_origin == tuple:
+            if type_origin is tuple:
                 if len(raw) != len(type_args):
                     raise ValueError(
                         f"Value provided for variable '{key_path}' of type {validating_type} is invalid: ({len(raw)}/{len(type_args)}) tuple entries provided"
@@ -495,11 +505,11 @@ class Variable:
                     )
                 )
 
-            if type_origin == tuple:
+            if type_origin is tuple:
                 return tuple(return_value)
 
             return return_value
-        elif type_origin == dict:
+        elif type_origin is dict:
             raw = value
             key_type, value_type = type_args
             if isinstance(raw, dict):
@@ -600,7 +610,7 @@ class Variable:
                 field_default = None
                 if (
                     current_field.default is not None
-                    and type(current_field.default) != _MISSING_TYPE
+                    and current_field.default != MISSING
                 ):
                     field_default = current_field.default
                 if current_field.default_factory != MISSING:
@@ -629,7 +639,7 @@ class Variable:
             result = Path(value)
             result.validate(f"Path provided for variable '{key_path}' is invalid")
             return result
-        elif validating_type == bool:
+        elif validating_type is bool:
             if not permissive_typing and not isinstance(value, bool):
                 raise ValueError(
                     f"Refusing to automatically convert '{value}' at '{key_path}' to a Boolean"
@@ -643,7 +653,7 @@ class Variable:
                     f"Value provided for variable '{key_path}' of type {validating_type.__name__} is invalid: '{value}'"
                 )
         elif issubclass(validating_type, Enum):
-            if type(value) == validating_type:
+            if type(value) is validating_type:
                 return value
             try:
                 return validating_type[value]

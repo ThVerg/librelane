@@ -1013,6 +1013,7 @@ class Step(ABC):
         state_in: GenericDict[str, Any] = self.state_in.result().copy_mut()
         for format_id in state_in:
             format = DesignFormat.factory.get(format_id)
+            assert format is not None
             if format not in self.__class__.inputs and not (
                 format == DesignFormat.DEF
                 and DesignFormat.ODB
