@@ -763,7 +763,7 @@ def test_remove_cells_from_lib(lib_trim_result):
         ), "remove_cells_from_lib produced unexpected result"
 
 
-@mock.patch.dict(os.environ, {"PATH": "/bin"})
+@mock.patch.dict(os.environ, {"PATH": ""})
 @pytest.mark.usefixtures("_chdir_tmp")
 def test_blackbox_creation_no_yosys(model_blackboxing):
     from librelane.common import Toolbox
